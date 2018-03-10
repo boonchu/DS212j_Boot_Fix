@@ -80,15 +80,14 @@ rd.gz:
 Start	f8000000+280000		= f8280000 
 End	f8000000+3c0000-1	= F83BFFFF
 
-protect off all
-- or -
+protect on all
 protect off f8080000 f827ffff (32 sectors range) 
 protect off f8280000 F83BFFFF (20 sectors range)
 
 erase f8080000 f827ffff
 erase f8280000 F83BFFFF
 
-cp.b 800000 f8080000 17ab04
+cp.b 800000 f8080000 17ab04 (17ab04 ~ Hex from TFTP bytes transfer value)
 cp.b d00000 f8280000 fcaad
 
 protect on all
