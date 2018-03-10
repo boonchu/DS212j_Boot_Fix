@@ -2,25 +2,37 @@ Required:
 
 USB-TFT CP2102
 CP2102 Driver
+Putty or script command (MacOS)
+ - script -f -c "picocom -b 115200 /dev/ttyUSB0" session.log
 
-http://ftp.synology.com/support_web/Document/How_to_Connect_with_DS%20&%20RS_by_Console,Com_Port%20-2016_0715.pdf
-
-https://wrgms.com/entering-single-user-mode-on-a-synology/
-https://wrgms.com/recovering-a-failed-synology-diskstation-ds2xx-serial/
-
+7z (unzips the .pat file to extract zImage and rd.bin)
+Serial to USB pins 
 Pin Number	Function	
 Confirmed on Synology DS212+	 
-1	3.3V	
+1	3.3V	(Optional)
 2	GND	
 4	TX	
 6	RX
+Serial 115200 8,1,N no flags required
 
+http://ftp.synology.com/support_web/Document/How_to_Connect_with_DS%20&%20RS_by_Console,Com_Port%20-2016_0715.pdf
+https://wrgms.com/entering-single-user-mode-on-a-synology/
+https://wrgms.com/recovering-a-failed-synology-diskstation-ds2xx-serial/ (good document)
 https://www.conetix.com.au/blog/synology-nas-bootrom-recovery
-
 https://www.packtpub.com/mapt/book/networking_and_servers/9781784392536/5/ch05lvl1sec60/using-tftp-to-load-the-kernel
+https://forum.synology.com/enu/viewtopic.php?t=84141 (good document)
+https://forum.synology.com/enu/viewtopic.php?f=27&t=40224
+http://www.synology-forum.de/showthread.html?78789-DS212-bis-u-boot-und-nicht-weiter
 
+Method all: Using steps to boot 
+
+- Set TFTPBoot Server from Windows
+	- Extract .pat file that downloads from synology download center to C:\<TFTPBOOT FOLDER>\
+
+- Set TFTPBoot Client/Server
 setenv serverip 10.0.0.6
 setenv ipaddr 10.0.0.10
+setenv netmask 255.255.255.0
 
 tftpboot 0x800000 zImage
 Bytes transferred = 1551108 (17ab04 hex)
@@ -28,22 +40,70 @@ Bytes transferred = 1551108 (17ab04 hex)
 tftpboot 0xd00000 rd.bin
 Bytes transferred = 1034925 (fcaad hex)
 
+Marvell>> md 800000
+00800000: 56190527 b461922d d05d6a5a c4aa1700    '..V-.a.Zj].....
+00800010: 00800000 00800000 33063647 00020205    ........G6.3....
+00800020: 756e694c 2e322d78 32332e36 0032312e    Linux-2.6.32.12.
+
+Marvell>> sf info
+
+Flash Base Address  : 0xf8000000
+Flash Model         : ST M25P32
+Manufacturer ID     : 0x20
+Device Id           : 0x2016
+Sector Size         : 64K
+Number of sectors   : 64
+Page Size           : 256
+Write Protection    : Off
+
+Method 1: Boot via boot transient memory 00800000 00600000
+
+Using TFTP steps above to boot synology
+
+bootm 00800000 00d00000
+
+Capturing these lines to use with Method 2
+[   19.100000] 0x000000000000-0x000000080000 : "RedBoot"
+[   19.110000] 0x000000080000-0x000000280000 : "zImage"
+[   19.110000] 0x000000280000-0x0000003c0000 : "rd.gz"
+[   19.120000] 0x0000003c0000-0x0000003d0000 : "vendor"
+
+Method 2: Update and make permanent boot through Flash memory
+
+Using TFTP steps above to boot synology
+
+zImage Address:
+Start 	f8000000+80000		= f8080000
+End  	f8000000+280000-1	= f827ffff
+
+rd.gz:
+Start	f8000000+280000		= f8280000 
+End	f8000000+3c0000-1	= F83BFFFF
+
 protect off all
+- or -
+protect off f8080000 f827ffff (32 sectors range) 
+protect off f8280000 F83BFFFF (20 sectors range)
 
-erase f8080000 f81effff
-cp.b 0x800000 f8080000 17ab04
+erase f8080000 f827ffff
+erase f8280000 F83BFFFF
 
-erase f8280000 f83effff
-cp.b 0xd00000 f8280000 fcaad
+cp.b 800000 f8080000 17ab04
+cp.b d00000 f8280000 fcaad
 
 protect on all
+- or -
+sf protect on
 
+reset
 
-reset ** if you want to run from bootcmd param settings **
+Misc Steps:
+
+1. Boot single user
+
 printenv bootcmd
 bootcmd=bootm F8080000 F8280000
 
 setenv bootargs 'console=ttyS0,115200 ip=off initrd=0x00800040,4M root=/dev/md0 rw syno_hw_version=DS212jv20 ihd_num=2 netif_num=1 esata_7042=1 reboot=cold,hard emergency init=/bin/sh'
 
-bootm 00800000 00d00000 ** working **
 bootm F8080000 F8280000  ** not working **
