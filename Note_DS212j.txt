@@ -1,0 +1,49 @@
+Required:
+
+USB-TFT CP2102
+CP2102 Driver
+
+http://ftp.synology.com/support_web/Document/How_to_Connect_with_DS%20&%20RS_by_Console,Com_Port%20-2016_0715.pdf
+
+https://wrgms.com/entering-single-user-mode-on-a-synology/
+https://wrgms.com/recovering-a-failed-synology-diskstation-ds2xx-serial/
+
+Pin Number	Function	
+Confirmed on Synology DS212+	 
+1	3.3V	
+2	GND	
+4	TX	
+6	RX
+
+https://www.conetix.com.au/blog/synology-nas-bootrom-recovery
+
+https://www.packtpub.com/mapt/book/networking_and_servers/9781784392536/5/ch05lvl1sec60/using-tftp-to-load-the-kernel
+
+setenv serverip 10.0.0.6
+setenv ipaddr 10.0.0.10
+
+tftpboot 0x800000 zImage
+Bytes transferred = 1551108 (17ab04 hex)
+
+tftpboot 0xd00000 rd.bin
+Bytes transferred = 1034925 (fcaad hex)
+
+protect off all
+
+erase f8080000 f81effff
+cp.b 0x800000 f8080000 17ab04
+
+erase f8280000 f83effff
+cp.b 0xd00000 f8280000 fcaad
+
+protect on all
+
+
+reset ** if you want to run from bootcmd param settings **
+printenv bootcmd
+bootcmd=bootm F8080000 F8280000
+
+setenv bootargs 'console=ttyS0,115200 ip=off initrd=0x00800040,4M root=/dev/md0 rw syno_hw_version=DS212jv20 ihd_num=2 netif_num=1 esata_7042=1 reboot=cold,hard emergency init=/bin/sh'
+
+bootm 00800000 00d00000 ** working **
+bootm F8080000 F8280000  ** not working **
