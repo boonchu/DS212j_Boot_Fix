@@ -1,12 +1,13 @@
-Required:
+Prep Steps:
 
-USB-TFT CP2102
-CP2102 Driver
-Putty or script command (MacOS)
- - script -f -c "picocom -b 115200 /dev/ttyUSB0" session.log
-
-7z (unzips the .pat file to extract zImage and rd.bin)
-Serial to USB pins 
+- USB-TFT CP2102
+- CP2102 Windows Driver
+- Putty software 
+- script command (MacOS)
+	- script -f -c "picocom -b 115200 /dev/ttyUSB0" session.log
+- 7z software (unzips the .pat file to extract zImage and rd.bin)
+- tar command (MacOS)
+- Wire CP2102 Serial to USB pins:
 Pin Number	Function	
 Confirmed on Synology DS212+	 
 1	3.3V	(Optional)
@@ -14,6 +15,8 @@ Confirmed on Synology DS212+
 4	TX	
 6	RX
 Serial 115200 8,1,N no flags required
+
+Intersting links:
 
 http://ftp.synology.com/support_web/Document/How_to_Connect_with_DS%20&%20RS_by_Console,Com_Port%20-2016_0715.pdf
 https://wrgms.com/entering-single-user-mode-on-a-synology/
@@ -24,7 +27,7 @@ https://forum.synology.com/enu/viewtopic.php?t=84141 (good document)
 https://forum.synology.com/enu/viewtopic.php?f=27&t=40224
 http://www.synology-forum.de/showthread.html?78789-DS212-bis-u-boot-und-nicht-weiter
 
-Method all: Using steps to boot 
+Method all: Primary steps to boot 
 
 - Set TFTPBoot Server from Windows
 	- Extract .pat file that downloads from synology download center to C:\<TFTPBOOT FOLDER>\
@@ -106,3 +109,10 @@ bootcmd=bootm F8080000 F8280000
 setenv bootargs 'console=ttyS0,115200 ip=off initrd=0x00800040,4M root=/dev/md0 rw syno_hw_version=DS212jv20 ihd_num=2 netif_num=1 esata_7042=1 reboot=cold,hard emergency init=/bin/sh'
 
 bootm F8080000 F8280000  ** not working **
+
+2. Reset root password
+
+ssh admin@ipaddress
+
+sudo su -
+synouser --setpw root your_new_root_password

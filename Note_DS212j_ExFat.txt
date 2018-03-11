@@ -1,0 +1,51 @@
+Exfat external USB mount to DS212j
+
+https://github.com/luckylz2git/exfat-synology
+https://github.com/luckylz2git/exfat-synology/tree/master/usbsync
+
+- Update latest DSM patch
+- Download this .deb https://packages.debian.org/stretch/armel/exfat-fuse/download
+- Upload the .deb to DS212j
+- Reset root password
+
+ssh admin@ipaddress
+sudo su -
+synouser --setpw root your_new_root_password
+
+- Update mount.exfat-fuse and script file
+
+sudo -i
+wget -P /tmp/ http://mirrors.kernel.org/ubuntu/pool/universe/f/fuse-exfat/exfat-fuse_1.2.3-1_amd64.deb
+dpkg -x /tmp/exfat-fuse_1.2.3-1_amd64.deb /tmp/exfat-fuse/
+cp /tmp/exfat-fuse/sbin/mount.exfat-fuse /bin/
+
+- Manual Mount
+
+sudo -i
+mkdir /volume1/usbexfat/usbshare1
+mount.exfat-fuse /dev/sdg1 /volume1/usbexfat/usbshare1
+
+- Update Automount Process script files
+
+wget -P /tmp/ https://github.com/luckylz2git/exfat-synology/raw/master/mount.sh --no-check-certificate
+chmod 755 /tmp/mount.sh
+mv /bin/mount /bin/mount.bin
+mkdir /volume1/usbexfat/
+
+If your own mountpoint does not look like /volume1/usbexfat/usbshare[1...n], you need to modify mountpoint in the mount.sh!
+MOUNTPOINT="/volume1/usbexfat/usbshare$n"
+
+mv /tmp/mount.sh /bin/mount
+
+wget -P /tmp/ https://github.com/luckylz2git/exfat-synology/raw/master/synocheckshare.sh --no-check-certificate
+chmod 755 /tmp/synocheckshare.sh
+mv /usr/syno/bin/synocheckshare /usr/syno/bin/synocheckshare.bin
+mv /tmp/synocheckshare.sh /usr/syno/bin/synocheckshare
+
+wget -P /tmp/ https://github.com/luckylz2git/exfat-synology/raw/master/usbsync/usbsync.sh --no-check-certificate
+chmod 755 /tmp/usbsync.sh
+mv /tmp/usbsync.sh /bin/usbsync.sh
+
+wget -P /tmp/ https://github.com/luckylz2git/exfat-synology/raw/master/usbsync/usbsync.cfg --no-check-certificate
+chmod 666 /tmp/usbsync.cfg
+mv /tmp/usbsync.cfg /volume1/PhotoImported/usbsync.cfg
