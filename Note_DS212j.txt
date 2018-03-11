@@ -1,6 +1,7 @@
 Prep Steps:
 
-- USB-TFT CP2102
+- USB-2-Serial CP2102 cable and unit
+- Solarwind TFTP Server
 - CP2102 Windows Driver
 - Putty software 
 - script command (MacOS)
