@@ -3,9 +3,23 @@ Prep Steps:
 - USB-2-Serial CP2102 cable and unit
 - Solarwind TFTP Server
 - CP2102 Windows Driver
+
+setup CP2102 on MacOS
+```
+- turn off security to allow third party vendor app
+- install CP2102 driver
+- if something was failed and cannot find device that started with /dev/tty.SLAB_USBtoUART. using this command to help out
+
+sudo kextutil -tn /Library/Extensions/SiLabsUSBDriver.kext
+
+- install cool term and setup serial to 115200, 8, 1, N
+
+- or using script command (MacOS)
+	- picocom -b 115200 /dev/tty.SLAB_USBtoUART
+```
+
 - Putty software 
-- script command (MacOS)
-	- script -f -c "picocom -b 115200 /dev/ttyUSB0" session.log
+
 - 7z software (unzips the .pat file to extract zImage and rd.bin)
 - tar command (MacOS)
 - Wire CP2102 Serial to USB pins:
